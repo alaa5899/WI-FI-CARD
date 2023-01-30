@@ -1,6 +1,6 @@
+import { dragAndDrop } from "./drag";
 const sideBarElements: NodeListOf<Element> =
   document.querySelectorAll("#side-nav li");
-
 sideBarElements.forEach((li: any) => {
   li.onclick = function () {
     this.classList.toggle("active");
@@ -10,9 +10,21 @@ sideBarElements.forEach((li: any) => {
 /**************************************************************************************** */
 
 //date
-const card_date = document.getElementById("card-date") as HTMLDivElement;
+const card_date = document.createElement("div") as HTMLDivElement;
 
 card_date.textContent = new Date().toLocaleDateString();
+
+const dateBtn = document.getElementById("date-btn") as HTMLLIElement;
+document.querySelector("#card").appendChild(card_date);
+card_date.id = "card_date";
+dateBtn.addEventListener("click", () => {
+  if (dateBtn.classList.contains("active")) {
+    document.querySelector("#card").appendChild(card_date);
+  } else {
+    card_date.remove();
+  }
+  dragAndDrop();
+});
 
 /**************************************************************************************** */
 
@@ -21,7 +33,11 @@ sideBarElements.forEach(function (li: any): void {
   li.addEventListener("click", function () {
     if (this.dataset.inform) {
       let item = document.querySelector(this.dataset.inform);
-      item.classList.toggle("hide");
+      if (item !== null) {
+        item.classList.toggle("hide");
+      }
+    } else {
+      return;
     }
   });
 });
@@ -163,9 +179,8 @@ function updateLogo(): void {
 function setLogo(fileInput: HTMLInputElement) {
   let curFiles = fileInput.files;
   let img: HTMLImageElement = document.createElement("img");
-  let logoContainer = document.getElementById(
-    "logo-container"
-  ) as HTMLDivElement;
+  let logoContainer = document.createElement("div") as HTMLDivElement;
+  logoContainer.setAttribute("id", "logo-container");
 
   for (const file of curFiles) {
     while (logoContainer.lastElementChild) {
@@ -179,6 +194,7 @@ function setLogo(fileInput: HTMLInputElement) {
       img.alt = `logo`;
       logoContainer.appendChild(img);
       card_container.appendChild(logoContainer);
+      dragAndDrop();
     }
   }
 }
@@ -242,7 +258,6 @@ contentDiv.appendChild(submitInfoBtn);
 
 //pop up text
 const popText = document.querySelector("#data-entry .pop-up") as HTMLElement;
-console.log(popText);
 //aside
 const aside = document.getElementById("side-nav") as HTMLElement;
 
@@ -260,31 +275,38 @@ addInfoBtn.addEventListener("click", function () {
     this.addEventListener("mouseover", () => {
       popText.style.display = "none";
     });
-
-    contentDiv.querySelector("button").addEventListener("click", () => {
-      // card_container.append(paragInfo);
-    });
   }
 });
 
 //check
-function responding(evt: any) {
-  if (evt.target.matches("input")) {
-    //create element inside card
-    const paragInfo = <HTMLParagraphElement>document.createElement("p");
+const paragInfo = <HTMLParagraphElement>document.createElement("div");
 
-    // add the info box inside card
-    contentDiv.querySelector("input").addEventListener("input", () => {
-      paragInfo.textContent = contentDiv.querySelector("input").value;
-    });
+//create element inside card
+paragInfo.style.cssText = `
+      top : 30px;
+      left : 80%;
+      width : 110px
+    `;
 
-    if (paragInfo.isConnected) {
-      paragInfo.textContent = contentDiv.querySelector("input").value;
-    } else if (!card_container.contains(paragInfo)) {
-      card_container.insertAdjacentElement("beforeend", paragInfo);
-    } else {
-    }
-  }
+contentDiv.querySelector("#info-input button").addEventListener("click", () => {
+  contentDiv.remove();
+  card_container.insertAdjacentElement("beforeend", paragInfo);
+});
+if (paragInfo.isConnected) {
+  paragInfo.textContent = contentDiv.querySelector("input").value;
+  dragAndDrop();
+} else if (!card_container.contains(paragInfo)) {
+} else {
 }
 
-inputTextInform.addEventListener("click", responding);
+inputTextInform.addEventListener("change", function () {
+  paragInfo.textContent = contentDiv.querySelector("input").value;
+});
+// add the info box inside card
+contentDiv.querySelector("#info-input button").addEventListener("click", () => {
+  card_container.appendChild(paragInfo);
+  dragAndDrop();
+});
+
+//trigger drag and drop
+dragAndDrop();
